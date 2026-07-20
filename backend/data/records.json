@@ -69,7 +69,18 @@
       "chequeURL": "/uploads/1784555815633-pjfai4emtvs.pdf"
     }
   ],
-  "catalogs": [],
+  "catalogs": [
+    {
+      "id": 1784575274498,
+      "name": "tata",
+      "catalogName": "tata",
+      "companyName": "",
+      "startDate": "2026-07-16",
+      "status": "Completed",
+      "fileName": "catalog-file",
+      "fileURL": ""
+    }
+  ],
   "documents": [],
   "users": [
     {
