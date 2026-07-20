@@ -1,0 +1,92 @@
+{
+  "approval": [],
+  "lot": [
+    {
+      "id": 1784555098630,
+      "companyName": "Tata company",
+      "fileName": "aal hari.pdf",
+      "storedFileName": "1784555098614-u7zt6wy8iic.pdf",
+      "filePath": "/uploads/1784555098614-u7zt6wy8iic.pdf"
+    }
+  ],
+  "account": [],
+  "emd": [],
+  "buyers": [
+    {
+      "id": 1784555636245,
+      "name": "rohini",
+      "company": "tata",
+      "contact": "8867601512",
+      "gstFile": "ferrobid-logo.png",
+      "gstURL": "/uploads/1784555636183-d3jldaad3dl.png",
+      "bankFile": "aal hari.pdf",
+      "bankURL": "/uploads/1784555636197-k6mtozv7q7.pdf",
+      "panFile": "aal hari.pdf",
+      "panURL": "/uploads/1784555636210-65s76jmcp8p.pdf",
+      "aadhaarFile": "Ferrobid1.pdf",
+      "aadhaarURL": "/uploads/1784555636216-o34mx2fuimr.pdf",
+      "kycFile": "FerroBidFinalCatalog.pdf",
+      "kycURL": "/uploads/1784555636227-11swd35zfp2g.pdf",
+      "chequeFile": "ferroBidTec11.pdf",
+      "chequeURL": "/uploads/1784555636234-1e9q0dwrpgsj.pdf"
+    },
+    {
+      "id": 1784555650826,
+      "name": "Test Buyer",
+      "company": "Test Co",
+      "contact": "123",
+      "gstFile": "package.json",
+      "gstURL": "/uploads/1784555650814-eehdk9gpk6a.json",
+      "bankFile": "package.json",
+      "bankURL": "/uploads/1784555650815-zkbhe6au32k.json",
+      "panFile": "package.json",
+      "panURL": "/uploads/1784555650815-xoq9km8ihbf.json",
+      "aadhaarFile": "package.json",
+      "aadhaarURL": "/uploads/1784555650816-z8m6r6vm5f.json",
+      "kycFile": "package.json",
+      "kycURL": "/uploads/1784555650817-cwoahmvnwog.json",
+      "chequeFile": "package.json",
+      "chequeURL": "/uploads/1784555650817-xk5q9gvdac.json"
+    }
+  ],
+  "sellers": [
+    {
+      "id": 1784555815650,
+      "name": "rohini",
+      "company": "ferrobid",
+      "contact": "1235567889",
+      "gstFile": "Ferrobid1.pdf",
+      "gstURL": "/uploads/1784555815584-57o78leu5o8.pdf",
+      "bankFile": "ferroBidTec4.pdf",
+      "bankURL": "/uploads/1784555815593-06yc4fj8cx3k.pdf",
+      "panFile": "Ferrobid1.pdf",
+      "panURL": "/uploads/1784555815607-14vne001zv9.pdf",
+      "aadhaarFile": "ferroBidTec.pdf",
+      "aadhaarURL": "/uploads/1784555815616-rmhm8evto4.pdf",
+      "kycFile": "ferroBidTec.pdf",
+      "kycURL": "/uploads/1784555815628-peoi3xbm9y.pdf",
+      "chequeFile": "ferroBidTec12.pdf",
+      "chequeURL": "/uploads/1784555815633-pjfai4emtvs.pdf"
+    }
+  ],
+  "catalogs": [],
+  "documents": [],
+  "users": [
+    {
+      "id": 1784556309315,
+      "name": "rohini",
+      "email": "subramanyarohini11@gmail.com",
+      "role": "admin",
+      "status": "Active"
+    },
+    {
+      "id": 1784556406912,
+      "name": "Test User",
+      "email": "test@example.com",
+      "role": "Admin",
+      "status": "Active"
+    }
+  ],
+  "lots": [],
+  "reports": []
+}

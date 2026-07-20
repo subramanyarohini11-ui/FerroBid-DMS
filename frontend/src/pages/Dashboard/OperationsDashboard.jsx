@@ -1,6 +1,16 @@
-import { useState } from "react";
+﻿import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Dashboard.css";
+import {
+  uploadBuyer,
+  getBuyers,
+  uploadSeller,
+  getSellers,
+  uploadCatalog,
+  getCatalogs,
+  uploadDocument,
+  getDocuments,
+} from "../../services/api";
 
 function OperationsDashboard() {
   const [activeMenu, setActiveMenu] = useState("Dashboard");
@@ -25,7 +35,7 @@ const [kycFile, setKycFile] = useState(null);
 const [chequeFile, setChequeFile] = useState(null);
 const [buyers, setBuyers] = useState([]);
 
-const handleSaveBuyer = () => {
+const handleSaveBuyer = async () => {
   if (
     !buyerName ||
     !buyerCompany ||
@@ -41,38 +51,46 @@ const handleSaveBuyer = () => {
     return;
   }
 
-  const newBuyer = {
-    id: Date.now(),
-    name: buyerName,
-    company: buyerCompany,
-    contact: buyerContact,
-    gstFile: gstFile.name,
-    gstURL: URL.createObjectURL(gstFile),
-    bankFile: bankFile.name,
-    bankURL: URL.createObjectURL(bankFile),
-    panFile: panFile.name,
-    panURL: URL.createObjectURL(panFile),
-    aadhaarFile: aadhaarFile.name,
-    aadhaarURL: URL.createObjectURL(aadhaarFile),
-    kycFile: kycFile.name,
-    kycURL: URL.createObjectURL(kycFile),
-    chequeFile: chequeFile.name,
-    chequeURL: URL.createObjectURL(chequeFile),
-  };
+  try {
+    const response = await uploadBuyer({
+      name: buyerName,
+      company: buyerCompany,
+      contact: buyerContact,
+      gstFile,
+      bankFile,
+      panFile,
+      aadhaarFile,
+      kycFile,
+      chequeFile,
+    });
 
-  setBuyers([...buyers, newBuyer]);
+    const newBuyer = {
+      ...response.data.record,
+      gstURL: response.data.record.gstURL ? `http://localhost:5000${response.data.record.gstURL}` : "",
+      bankURL: response.data.record.bankURL ? `http://localhost:5000${response.data.record.bankURL}` : "",
+      panURL: response.data.record.panURL ? `http://localhost:5000${response.data.record.panURL}` : "",
+      aadhaarURL: response.data.record.aadhaarURL ? `http://localhost:5000${response.data.record.aadhaarURL}` : "",
+      kycURL: response.data.record.kycURL ? `http://localhost:5000${response.data.record.kycURL}` : "",
+      chequeURL: response.data.record.chequeURL ? `http://localhost:5000${response.data.record.chequeURL}` : "",
+    };
 
-  setBuyerName("");
-  setBuyerCompany("");
-  setBuyerContact("");
-  setGstFile(null);
-  setBankFile(null);
-  setPanFile(null);
-  setAadhaarFile(null);
-  setKycFile(null);
-  setChequeFile(null);
+    await refreshOperationsData();
 
-  alert("Buyer saved successfully.");
+    setBuyerName("");
+    setBuyerCompany("");
+    setBuyerContact("");
+    setGstFile(null);
+    setBankFile(null);
+    setPanFile(null);
+    setAadhaarFile(null);
+    setKycFile(null);
+    setChequeFile(null);
+
+    alert("Buyer saved successfully.");
+  } catch (error) {
+    console.error(error);
+    alert("Failed to save buyer.");
+  }
 };
 
 const [sellerName, setSellerName] = useState("");
@@ -86,7 +104,7 @@ const [sellerKycFile, setSellerKycFile] = useState(null);
 const [sellerChequeFile, setSellerChequeFile] = useState(null);
 const [sellers, setSellers] = useState([]);
 
-const handleSaveSeller = () => {
+const handleSaveSeller = async () => {
   if (
     !sellerName ||
     !sellerCompany ||
@@ -102,38 +120,46 @@ const handleSaveSeller = () => {
     return;
   }
 
-  const newSeller = {
-    id: Date.now(),
-    name: sellerName,
-    company: sellerCompany,
-    contact: sellerContact,
-    gstFile: sellerGstFile.name,
-    gstURL: URL.createObjectURL(sellerGstFile),
-    bankFile: sellerBankFile.name,
-    bankURL: URL.createObjectURL(sellerBankFile),
-    panFile: sellerPanFile.name,
-    panURL: URL.createObjectURL(sellerPanFile),
-    aadhaarFile: sellerAadhaarFile.name,
-    aadhaarURL: URL.createObjectURL(sellerAadhaarFile),
-    kycFile: sellerKycFile.name,
-    kycURL: URL.createObjectURL(sellerKycFile),
-    chequeFile: sellerChequeFile.name,
-    chequeURL: URL.createObjectURL(sellerChequeFile),
-  };
+  try {
+    const response = await uploadSeller({
+      name: sellerName,
+      company: sellerCompany,
+      contact: sellerContact,
+      gstFile: sellerGstFile,
+      bankFile: sellerBankFile,
+      panFile: sellerPanFile,
+      aadhaarFile: sellerAadhaarFile,
+      kycFile: sellerKycFile,
+      chequeFile: sellerChequeFile,
+    });
 
-  setSellers([...sellers, newSeller]);
+    const newSeller = {
+      ...response.data.record,
+      gstURL: response.data.record.gstURL ? `http://localhost:5000${response.data.record.gstURL}` : "",
+      bankURL: response.data.record.bankURL ? `http://localhost:5000${response.data.record.bankURL}` : "",
+      panURL: response.data.record.panURL ? `http://localhost:5000${response.data.record.panURL}` : "",
+      aadhaarURL: response.data.record.aadhaarURL ? `http://localhost:5000${response.data.record.aadhaarURL}` : "",
+      kycURL: response.data.record.kycURL ? `http://localhost:5000${response.data.record.kycURL}` : "",
+      chequeURL: response.data.record.chequeURL ? `http://localhost:5000${response.data.record.chequeURL}` : "",
+    };
 
-  setSellerName("");
-  setSellerCompany("");
-  setSellerContact("");
-  setSellerGstFile(null);
-  setSellerBankFile(null);
-  setSellerPanFile(null);
-  setSellerAadhaarFile(null);
-  setSellerKycFile(null);
-  setSellerChequeFile(null);
+    await refreshOperationsData();
 
-  alert("Seller saved successfully.");
+    setSellerName("");
+    setSellerCompany("");
+    setSellerContact("");
+    setSellerGstFile(null);
+    setSellerBankFile(null);
+    setSellerPanFile(null);
+    setSellerAadhaarFile(null);
+    setSellerKycFile(null);
+    setSellerChequeFile(null);
+
+    alert("Seller saved successfully.");
+  } catch (error) {
+    console.error(error);
+    alert("Failed to save seller.");
+  }
 };
 
   // Auction Catalog States
@@ -142,28 +168,152 @@ const handleSaveSeller = () => {
   const [catalogFile, setCatalogFile] = useState(null);
   const [catalogs, setCatalogs] = useState([]);
 
-  // Save Catalog
-  const handleSaveCatalog = () => {
+  const refreshOperationsData = async () => {
+    try {
+      const [buyersResponse, sellersResponse, catalogsResponse, documentsResponse] = await Promise.all([
+        getBuyers(),
+        getSellers(),
+        getCatalogs(),
+        getDocuments(),
+      ]);
+
+      setBuyers((buyersResponse.data || []).map((item) => ({
+        ...item,
+        gstURL: item.gstURL ? `http://localhost:5000${item.gstURL}` : "",
+        bankURL: item.bankURL ? `http://localhost:5000${item.bankURL}` : "",
+        panURL: item.panURL ? `http://localhost:5000${item.panURL}` : "",
+        aadhaarURL: item.aadhaarURL ? `http://localhost:5000${item.aadhaarURL}` : "",
+        kycURL: item.kycURL ? `http://localhost:5000${item.kycURL}` : "",
+        chequeURL: item.chequeURL ? `http://localhost:5000${item.chequeURL}` : "",
+      })));
+      setSellers((sellersResponse.data || []).map((item) => ({
+        ...item,
+        gstURL: item.gstURL ? `http://localhost:5000${item.gstURL}` : "",
+        bankURL: item.bankURL ? `http://localhost:5000${item.bankURL}` : "",
+        panURL: item.panURL ? `http://localhost:5000${item.panURL}` : "",
+        aadhaarURL: item.aadhaarURL ? `http://localhost:5000${item.aadhaarURL}` : "",
+        kycURL: item.kycURL ? `http://localhost:5000${item.kycURL}` : "",
+        chequeURL: item.chequeURL ? `http://localhost:5000${item.chequeURL}` : "",
+      })));
+      setCatalogs((catalogsResponse.data || []).map((item) => ({
+        ...item,
+        fileURL: item.fileURL ? `http://localhost:5000${item.fileURL}` : "",
+      })));
+      setDocuments((documentsResponse.data || []).map((item) => ({
+        ...item,
+        fileURL: item.fileURL ? `http://localhost:5000${item.fileURL}` : "",
+      })));
+    } catch (error) {
+      console.error("Failed to load operations data", error);
+      throw error;
+    }
+  };
+
+  useEffect(() => {
+    refreshOperationsData().catch(() => {});
+  }, []);
+
+  const handleSaveCatalog = async () => {
     if (!catalogName || !companyName || !catalogFile) {
       alert("Please fill all fields.");
       return;
     }
 
-    const newCatalog = {
-      id: Date.now(),
-      catalogName,
-      companyName,
-      fileName: catalogFile.name,
-      fileURL: URL.createObjectURL(catalogFile),
-    };
+    try {
+      const response = await uploadCatalog({
+        catalogName,
+        companyName,
+        file: catalogFile,
+      });
 
-    setCatalogs([...catalogs, newCatalog]);
+      const newCatalog = {
+        ...response.data.record,
+        fileURL: response.data.record.fileURL ? `http://localhost:5000${response.data.record.fileURL}` : "",
+      };
 
-    setCatalogName("");
-    setCompanyName("");
-    setCatalogFile(null);
+      await refreshOperationsData();
 
-    alert("Catalog uploaded successfully.");
+      setCatalogName("");
+      setCompanyName("");
+      setCatalogFile(null);
+
+      alert("Catalog uploaded successfully.");
+    } catch (error) {
+      console.error(error);
+      alert("Failed to upload catalog.");
+    }
+  };
+
+  const [auctionName, setAuctionName] = useState("");
+  const [auctionCompanyName, setAuctionCompanyName] = useState("");
+  const [documentType, setDocumentType] = useState("");
+  const [documentFile, setDocumentFile] = useState(null);
+  const [documents, setDocuments] = useState([
+    {
+      id: 1,
+      auctionName: "Industrial Scrap Auction",
+      companyName: "Tata Steel Ltd.",
+      documentType: "Auction Approval Letter",
+      fileName: "approval_letter.pdf",
+      fileURL: "#",
+    },
+    {
+      id: 2,
+      auctionName: "Machinery Auction",
+      companyName: "JSW Steel",
+      documentType: "Delivery Order",
+      fileName: "delivery_order.pdf",
+      fileURL: "#",
+    },
+  ]);
+  const [editingDocumentId, setEditingDocumentId] = useState(null);
+  const [documentResetKey, setDocumentResetKey] = useState(0);
+
+  const handleSaveDocument = async () => {
+    if (!auctionName || !auctionCompanyName || !documentType || !documentFile) {
+      alert("Please fill all fields and upload a document.");
+      return;
+    }
+
+    try {
+      const response = await uploadDocument({
+        auctionName,
+        companyName: auctionCompanyName,
+        documentType,
+        file: documentFile,
+      });
+
+      const newDocument = {
+        ...response.data.record,
+        fileURL: response.data.record.fileURL ? `http://localhost:5000${response.data.record.fileURL}` : "",
+      };
+
+      await refreshOperationsData();
+
+      setAuctionName("");
+      setAuctionCompanyName("");
+      setDocumentType("");
+      setDocumentFile(null);
+      setEditingDocumentId(null);
+      setDocumentResetKey((prev) => prev + 1);
+
+      alert("Document uploaded successfully.");
+    } catch (error) {
+      console.error(error);
+      alert("Failed to upload document.");
+    }
+  };
+
+  const handleEditDocument = (doc) => {
+    setEditingDocumentId(doc.id);
+    setAuctionName(doc.auctionName);
+    setAuctionCompanyName(doc.companyName);
+    setDocumentType(doc.documentType);
+    setDocumentFile(null);
+  };
+
+  const handleDeleteDocument = (id) => {
+    setDocuments((prev) => prev.filter((item) => item.id !== id));
   };
 
   const renderContent = () => {
@@ -266,9 +416,14 @@ const handleSaveSeller = () => {
           />
         </div>
 
-        <button className="primary-btn" onClick={handleSaveBuyer}>
-          Save Buyer
-        </button>
+        <div style={{ display: "flex", justifyContent: "center", gap: "12px", marginTop: "22px" }}>
+          <button type="button" className="primary-btn" onClick={handleSaveBuyer} style={{ margin: 0 }}>
+            Save Buyer
+          </button>
+          <button type="button" className="primary-btn" onClick={handleSaveBuyer} style={{ margin: 0 }}>
+            Add Buyer
+          </button>
+        </div>
       </div>
 
       <br />
@@ -480,9 +635,14 @@ const handleSaveSeller = () => {
           />
         </div>
 
-        <button className="primary-btn" onClick={handleSaveSeller}>
-          Save Seller
-        </button>
+        <div style={{ display: "flex", justifyContent: "center", gap: "12px", marginTop: "22px" }}>
+          <button type="button" className="primary-btn" onClick={handleSaveSeller} style={{ margin: 0 }}>
+            Save Seller
+          </button>
+          <button type="button" className="primary-btn" onClick={handleSaveSeller} style={{ margin: 0 }}>
+            Add Seller
+          </button>
+        </div>
       </div>
 
       <br />
@@ -637,9 +797,14 @@ const handleSaveSeller = () => {
           />
         </div>
 
-        <button className="primary-btn" onClick={handleSaveCatalog}>
-          Save Catalog
-        </button>
+        <div style={{ display: "flex", justifyContent: "center", gap: "12px", marginTop: "22px" }}>
+          <button type="button" className="primary-btn" onClick={handleSaveCatalog} style={{ margin: 0 }}>
+            Save Catalog
+          </button>
+          <button type="button" className="primary-btn" onClick={handleSaveCatalog} style={{ margin: 0 }}>
+            Add Catalog
+          </button>
+        </div>
       </div>
 
       <br />
@@ -757,7 +922,14 @@ const handleSaveSeller = () => {
                 />
               </div>
 
-              <button className="primary-btn">Save Lot</button>
+              <div style={{ display: "flex", justifyContent: "center", gap: "12px", marginTop: "22px" }}>
+                <button type="button" className="primary-btn" style={{ margin: 0 }}>
+                  Save Lot
+                </button>
+                <button type="button" className="primary-btn" style={{ margin: 0 }}>
+                  Add Lot
+                </button>
+              </div>
             </div>
 
             <br />
@@ -806,7 +978,7 @@ const handleSaveSeller = () => {
       </p>
 
       <div className="module-box">
-        <h2>Upload Auction Document</h2>
+        <h2>{editingDocumentId ? "Edit Auction Document" : "Upload Auction Document"}</h2>
 
         <div className="form-row">
           <label>Auction Name</label>
@@ -814,6 +986,8 @@ const handleSaveSeller = () => {
             type="text"
             placeholder="Enter Auction Name"
             className="form-input"
+            value={auctionName}
+            onChange={(e) => setAuctionName(e.target.value)}
           />
         </div>
 
@@ -823,32 +997,55 @@ const handleSaveSeller = () => {
             type="text"
             placeholder="Enter Company Name"
             className="form-input"
+            value={auctionCompanyName}
+            onChange={(e) => setAuctionCompanyName(e.target.value)}
           />
         </div>
 
         <div className="form-row">
           <label>Document Type</label>
-          <select className="form-input">
-            <option>Select Document Type</option>
-            <option>Auction Approval Letter</option>
-            <option>Delivery Order</option>
-            <option>Auction Result</option>
-            <option>Agreement</option>
-            <option>Invoice</option>
-            <option>Purchase Order</option>
-            <option>EMD Receipt</option>
-            <option>Payment Receipt</option>
-            <option>Material Release Order</option>
-            <option>Other Documents</option>
+          <select
+            className="form-input"
+            value={documentType}
+            onChange={(e) => setDocumentType(e.target.value)}
+          >
+            <option value="">Select Document Type</option>
+            <option value="Auction Approval Letter">Auction Approval Letter</option>
+            <option value="Delivery Order">Delivery Order</option>
+            <option value="Auction Result">Auction Result</option>
+            <option value="Agreement">Agreement</option>
+            <option value="Invoice">Invoice</option>
+            <option value="Purchase Order">Purchase Order</option>
+            <option value="EMD Receipt">EMD Receipt</option>
+            <option value="Payment Receipt">Payment Receipt</option>
+            <option value="Material Release Order">Material Release Order</option>
+            <option value="Other Documents">Other Documents</option>
           </select>
         </div>
 
         <div className="form-row">
           <label>Upload Document</label>
-          <input type="file" accept=".pdf,.doc,.docx,.xls,.xlsx" />
+          <input
+            key={documentResetKey}
+            type="file"
+            accept=".pdf,.doc,.docx,.xls,.xlsx"
+            onChange={(e) => setDocumentFile(e.target.files[0])}
+          />
         </div>
 
-        <button className="primary-btn">Save Document</button>
+        <div style={{ display: "flex", justifyContent: "center", gap: "12px", marginTop: "22px" }}>
+          <button type="button" className="primary-btn" onClick={handleSaveDocument} style={{ margin: 0 }}>
+            {editingDocumentId ? "Save Changes" : "Save Document"}
+          </button>
+          <button
+            type="button"
+            className="primary-btn"
+            onClick={handleSaveDocument}
+            style={{ margin: 0 }}
+          >
+            Add Document
+          </button>
+        </div>
       </div>
 
       <br />
@@ -868,33 +1065,42 @@ const handleSaveSeller = () => {
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <td>1</td>
-              <td>Industrial Scrap Auction</td>
-              <td>Tata Steel Ltd.</td>
-              <td>Auction Approval Letter</td>
-              <td>approval_letter.pdf</td>
-              <td>
-                <button className="link-btn">View</button>
-                <button className="link-btn">Download</button>
-                <button className="link-btn">Edit</button>
-                <button className="link-btn">Delete</button>
-              </td>
-            </tr>
-
-            <tr>
-              <td>2</td>
-              <td>Machinery Auction</td>
-              <td>JSW Steel</td>
-              <td>Delivery Order</td>
-              <td>delivery_order.pdf</td>
-              <td>
-                <button className="link-btn">View</button>
-                <button className="link-btn">Download</button>
-                <button className="link-btn">Edit</button>
-                <button className="link-btn">Delete</button>
-              </td>
-            </tr>
+            {documents.length === 0 ? (
+              <tr>
+                <td colSpan="6" style={{ textAlign: "center" }}>
+                  No Documents Uploaded
+                </td>
+              </tr>
+            ) : (
+              documents.map((doc, index) => (
+                <tr key={doc.id}>
+                  <td>{index + 1}</td>
+                  <td>{doc.auctionName}</td>
+                  <td>{doc.companyName}</td>
+                  <td>{doc.documentType}</td>
+                  <td>
+                    {doc.fileURL && doc.fileURL !== "#" ? (
+                      <a href={doc.fileURL} target="_blank" rel="noreferrer">
+                        {doc.fileName}
+                      </a>
+                    ) : (
+                      doc.fileName
+                    )}
+                  </td>
+                  <td>
+                    <a href={doc.fileURL} target="_blank" rel="noreferrer" className="link-btn">
+                      View
+                    </a>
+                    <button className="link-btn" onClick={() => handleEditDocument(doc)}>
+                      Edit
+                    </button>
+                    <button className="link-btn" onClick={() => handleDeleteDocument(doc.id)}>
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>
