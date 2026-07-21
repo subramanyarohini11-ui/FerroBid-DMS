@@ -96,8 +96,22 @@
       "email": "test@example.com",
       "role": "Admin",
       "status": "Active"
+    },
+    {
+      "id": 1784604657659,
+      "name": "rohith",
+      "email": "subramanyarohini11@gmail.com",
+      "role": "subadmin",
+      "status": "Active"
     }
   ],
   "lots": [],
-  "reports": []
+  "reports": [
+    {
+      "id": 1784604691134,
+      "name": "Auto Report #1784604690689",
+      "type": "Users",
+      "status": "Completed"
+    }
+  ]
 }
