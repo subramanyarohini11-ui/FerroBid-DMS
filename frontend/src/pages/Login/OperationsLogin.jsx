@@ -17,7 +17,7 @@ function OperationsLogin() {
       setErrorMessage("");
       localStorage.setItem("isAuthenticated", "true");
       localStorage.setItem("userRole", "operations");
-      navigate("/operations-dashboard");
+      navigate("/subadmin");
     } else {
       setErrorMessage("Invalid username or password");
     }

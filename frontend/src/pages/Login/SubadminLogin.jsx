@@ -20,7 +20,7 @@ function SubAdminLogin() {
       normalizedPassword === "subadmin123"
     ) {
       setErrorMessage("");
-      navigate("/subadmin");
+      navigate("/operations-dashboard");
     } else {
       setErrorMessage("Invalid username or password");
     }

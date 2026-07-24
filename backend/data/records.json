@@ -47,6 +47,49 @@
       "kycURL": "/uploads/1784555650817-cwoahmvnwog.json",
       "chequeFile": "package.json",
       "chequeURL": "/uploads/1784555650817-xk5q9gvdac.json"
+    },
+    {
+      "id": 1784795934367,
+      "name": "raksha",
+      "company": "tata",
+      "contact": "123456",
+      "status": "Active",
+      "gstFile": "FerroBid2.pdf",
+      "gstURL": "/uploads/1784795934174-d53qy5crv0c.pdf",
+      "bankFile": "ferroBidTec11.pdf",
+      "bankURL": "",
+      "panFile": "FerroBid.pdf",
+      "panURL": "",
+      "aadhaarFile": "FerroBidFinalCatalog.pdf",
+      "aadhaarURL": "",
+      "kycFile": "ferroBidTec4.pdf",
+      "kycURL": "",
+      "chequeFile": "",
+      "chequeURL": "",
+      "gstFileURL": "/uploads/1784796513714-xvwlavbhpo.pdf",
+      "bankFileURL": "/uploads/1784796312112-ew9bewlsqtb.pdf",
+      "panFileURL": "/uploads/1784796312124-na1yuk0tbm.pdf",
+      "aadhaarFileURL": "/uploads/1784796312133-fk9s3bhvuxh.pdf",
+      "kycFileURL": "/uploads/1784796312148-7p8xgjqvbew.pdf"
+    },
+    {
+      "id": 1784797407685,
+      "name": "rohith",
+      "company": "tcs",
+      "status": "Inactive",
+      "gstFile": "FerroBid.pdf",
+      "gstURL": "/uploads/1784809793704-hiy91g7e01d.pdf",
+      "bankFile": "ferroBidTec.pdf",
+      "bankURL": "/uploads/1784809793753-zld7r2k4vke.pdf",
+      "panFile": "",
+      "panURL": "",
+      "aadhaarFile": "",
+      "aadhaarURL": "",
+      "kycFile": "",
+      "kycURL": "",
+      "chequeFile": "",
+      "chequeURL": "",
+      "contact": "123455"
     }
   ],
   "sellers": [
@@ -67,29 +110,60 @@
       "kycURL": "/uploads/1784555815628-peoi3xbm9y.pdf",
       "chequeFile": "ferroBidTec12.pdf",
       "chequeURL": "/uploads/1784555815633-pjfai4emtvs.pdf"
+    },
+    {
+      "id": 1784795116978,
+      "name": "Rohith",
+      "company": "tata",
+      "contact": "1234567890",
+      "status": "Active",
+      "gstFile": "",
+      "gstURL": "",
+      "bankFile": "",
+      "bankURL": "",
+      "panFile": "",
+      "panURL": "",
+      "aadhaarFile": "",
+      "aadhaarURL": "",
+      "kycFile": "FerroBid2.pdf",
+      "kycURL": "/uploads/1784809834519-1oifykyqh1t.pdf",
+      "chequeFile": "ferroBidTec4.pdf",
+      "chequeURL": "/uploads/1784809834559-o3t1kjtso1g.pdf"
     }
   ],
   "catalogs": [
     {
-      "id": 1784575274498,
-      "name": "tata",
-      "catalogName": "tata",
+      "id": 1784868556073,
+      "name": "1",
+      "catalogName": "1",
+      "companyName": "tata",
+      "startDate": "",
+      "status": "Upcoming",
+      "fileName": "FerroBid.pdf",
+      "fileURL": "/uploads/1784868555785-lmr4h9m7az.pdf",
+      "lotNumber": "101",
+      "lotName": "scrab",
+      "lotDescription": "its not in good condidtion",
+      "lotImage": "ferrobid-logo.png",
+      "lotImageURL": "/uploads/1784868555827-rkphn6fjg9.png",
+      "supportingDocument": "Ferro.pdf",
+      "supportingDocumentURL": "/uploads/1784868555845-zbaumljb17l.pdf"
+    }
+  ],
+  "documents": [
+    {
+      "id": 1784614534749,
+      "name": "CLIENT1.docx",
+      "category": "Other",
+      "status": "Pending",
+      "auctionName": "",
       "companyName": "",
-      "startDate": "2026-07-16",
-      "status": "Completed",
-      "fileName": "catalog-file",
+      "documentType": "",
+      "fileName": "document-file",
       "fileURL": ""
     }
   ],
-  "documents": [],
   "users": [
-    {
-      "id": 1784556309315,
-      "name": "rohini",
-      "email": "subramanyarohini11@gmail.com",
-      "role": "admin",
-      "status": "Active"
-    },
     {
       "id": 1784556406912,
       "name": "Test User",
@@ -110,6 +184,12 @@
     {
       "id": 1784604691134,
       "name": "Auto Report #1784604690689",
+      "type": "Users",
+      "status": "Completed"
+    },
+    {
+      "id": 1784614798509,
+      "name": "Auto Report #1784614797832",
       "type": "Users",
       "status": "Completed"
     }

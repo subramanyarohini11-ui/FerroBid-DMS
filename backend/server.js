@@ -241,8 +241,46 @@ app.get('/api/buyers', (req, res) => {
   res.json(records.buyers);
 });
 
-app.put('/api/buyers/:id', (req, res) => {
-  const updated = updateById('buyers', req.params.id, req.body);
+app.put('/api/buyers/:id', upload.fields([
+  { name: 'gstFile', maxCount: 1 },
+  { name: 'bankFile', maxCount: 1 },
+  { name: 'panFile', maxCount: 1 },
+  { name: 'aadhaarFile', maxCount: 1 },
+  { name: 'kycFile', maxCount: 1 },
+  { name: 'chequeFile', maxCount: 1 },
+]), (req, res) => {
+  const existing = records.buyers.find((item) => String(item.id) === String(req.params.id));
+  if (!existing) return res.status(404).json({ success: false, message: 'Buyer not found' });
+
+  const files = req.files || {};
+  const patch = { ...req.body };
+
+  if (files.gstFile?.[0]) {
+    patch.gstFile = files.gstFile[0].originalname;
+    patch.gstURL = `/uploads/${files.gstFile[0].filename}`;
+  }
+  if (files.bankFile?.[0]) {
+    patch.bankFile = files.bankFile[0].originalname;
+    patch.bankURL = `/uploads/${files.bankFile[0].filename}`;
+  }
+  if (files.panFile?.[0]) {
+    patch.panFile = files.panFile[0].originalname;
+    patch.panURL = `/uploads/${files.panFile[0].filename}`;
+  }
+  if (files.aadhaarFile?.[0]) {
+    patch.aadhaarFile = files.aadhaarFile[0].originalname;
+    patch.aadhaarURL = `/uploads/${files.aadhaarFile[0].filename}`;
+  }
+  if (files.kycFile?.[0]) {
+    patch.kycFile = files.kycFile[0].originalname;
+    patch.kycURL = `/uploads/${files.kycFile[0].filename}`;
+  }
+  if (files.chequeFile?.[0]) {
+    patch.chequeFile = files.chequeFile[0].originalname;
+    patch.chequeURL = `/uploads/${files.chequeFile[0].filename}`;
+  }
+
+  const updated = updateById('buyers', req.params.id, patch);
   if (!updated) return res.status(404).json({ success: false, message: 'Buyer not found' });
   res.json({ success: true, record: updated });
 });
@@ -290,8 +328,46 @@ app.get('/api/sellers', (req, res) => {
   res.json(records.sellers);
 });
 
-app.put('/api/sellers/:id', (req, res) => {
-  const updated = updateById('sellers', req.params.id, req.body);
+app.put('/api/sellers/:id', upload.fields([
+  { name: 'gstFile', maxCount: 1 },
+  { name: 'bankFile', maxCount: 1 },
+  { name: 'panFile', maxCount: 1 },
+  { name: 'aadhaarFile', maxCount: 1 },
+  { name: 'kycFile', maxCount: 1 },
+  { name: 'chequeFile', maxCount: 1 },
+]), (req, res) => {
+  const existing = records.sellers.find((item) => String(item.id) === String(req.params.id));
+  if (!existing) return res.status(404).json({ success: false, message: 'Seller not found' });
+
+  const files = req.files || {};
+  const patch = { ...req.body };
+
+  if (files.gstFile?.[0]) {
+    patch.gstFile = files.gstFile[0].originalname;
+    patch.gstURL = `/uploads/${files.gstFile[0].filename}`;
+  }
+  if (files.bankFile?.[0]) {
+    patch.bankFile = files.bankFile[0].originalname;
+    patch.bankURL = `/uploads/${files.bankFile[0].filename}`;
+  }
+  if (files.panFile?.[0]) {
+    patch.panFile = files.panFile[0].originalname;
+    patch.panURL = `/uploads/${files.panFile[0].filename}`;
+  }
+  if (files.aadhaarFile?.[0]) {
+    patch.aadhaarFile = files.aadhaarFile[0].originalname;
+    patch.aadhaarURL = `/uploads/${files.aadhaarFile[0].filename}`;
+  }
+  if (files.kycFile?.[0]) {
+    patch.kycFile = files.kycFile[0].originalname;
+    patch.kycURL = `/uploads/${files.kycFile[0].filename}`;
+  }
+  if (files.chequeFile?.[0]) {
+    patch.chequeFile = files.chequeFile[0].originalname;
+    patch.chequeURL = `/uploads/${files.chequeFile[0].filename}`;
+  }
+
+  const updated = updateById('sellers', req.params.id, patch);
   if (!updated) return res.status(404).json({ success: false, message: 'Seller not found' });
   res.json({ success: true, record: updated });
 });
@@ -302,7 +378,12 @@ app.delete('/api/sellers/:id', (req, res) => {
   res.json({ success: true });
 });
 
-app.post('/api/catalogs', upload.single('file'), (req, res) => {
+app.post('/api/catalogs', upload.fields([
+  { name: 'file', maxCount: 1 },
+  { name: 'lotImage', maxCount: 1 },
+  { name: 'supportingDocument', maxCount: 1 },
+]), (req, res) => {
+  const files = req.files || {};
   const record = {
     id: makeRecordId(),
     name: req.body.name || req.body.catalogName || 'Untitled Catalog',
@@ -310,8 +391,15 @@ app.post('/api/catalogs', upload.single('file'), (req, res) => {
     companyName: req.body.companyName || '',
     startDate: req.body.startDate || '',
     status: req.body.status || 'Upcoming',
-    fileName: req.file?.originalname || 'catalog-file',
-    fileURL: req.file ? `/uploads/${req.file.filename}` : '',
+    fileName: files.file?.[0]?.originalname || 'catalog-file',
+    fileURL: files.file?.[0] ? `/uploads/${files.file[0].filename}` : '',
+    lotNumber: req.body.lotNumber || '',
+    lotName: req.body.lotName || '',
+    lotDescription: req.body.lotDescription || '',
+    lotImage: files.lotImage?.[0]?.originalname || '',
+    lotImageURL: files.lotImage?.[0] ? `/uploads/${files.lotImage[0].filename}` : '',
+    supportingDocument: files.supportingDocument?.[0]?.originalname || '',
+    supportingDocumentURL: files.supportingDocument?.[0] ? `/uploads/${files.supportingDocument[0].filename}` : '',
   };
   records.catalogs.push(record);
   saveRecords(records);
@@ -322,8 +410,30 @@ app.get('/api/catalogs', (req, res) => {
   res.json(records.catalogs);
 });
 
-app.put('/api/catalogs/:id', (req, res) => {
-  const updated = updateById('catalogs', req.params.id, req.body);
+app.put('/api/catalogs/:id', upload.fields([
+  { name: 'file', maxCount: 1 },
+  { name: 'lotImage', maxCount: 1 },
+  { name: 'supportingDocument', maxCount: 1 },
+]), (req, res) => {
+  const existing = records.catalogs.find((item) => String(item.id) === String(req.params.id));
+  if (!existing) return res.status(404).json({ success: false, message: 'Catalog not found' });
+
+  const patch = { ...req.body };
+  const files = req.files || {};
+  if (files.file?.[0]) {
+    patch.fileName = files.file[0].originalname;
+    patch.fileURL = `/uploads/${files.file[0].filename}`;
+  }
+  if (files.lotImage?.[0]) {
+    patch.lotImage = files.lotImage[0].originalname;
+    patch.lotImageURL = `/uploads/${files.lotImage[0].filename}`;
+  }
+  if (files.supportingDocument?.[0]) {
+    patch.supportingDocument = files.supportingDocument[0].originalname;
+    patch.supportingDocumentURL = `/uploads/${files.supportingDocument[0].filename}`;
+  }
+
+  const updated = updateById('catalogs', req.params.id, patch);
   if (!updated) return res.status(404).json({ success: false, message: 'Catalog not found' });
   res.json({ success: true, record: updated });
 });
@@ -440,8 +550,17 @@ app.get('/api/documents', (req, res) => {
   res.json(records.documents);
 });
 
-app.put('/api/documents/:id', (req, res) => {
-  const updated = updateById('documents', req.params.id, req.body);
+app.put('/api/documents/:id', upload.single('file'), (req, res) => {
+  const existing = records.documents.find((item) => String(item.id) === String(req.params.id));
+  if (!existing) return res.status(404).json({ success: false, message: 'Document not found' });
+
+  const patch = { ...req.body };
+  if (req.file) {
+    patch.fileName = req.file.originalname;
+    patch.fileURL = `/uploads/${req.file.filename}`;
+  }
+
+  const updated = updateById('documents', req.params.id, patch);
   if (!updated) return res.status(404).json({ success: false, message: 'Document not found' });
   res.json({ success: true, record: updated });
 });
@@ -452,7 +571,15 @@ app.delete('/api/documents/:id', (req, res) => {
   res.json({ success: true });
 });
 
-app.use('/uploads', express.static(uploadDir));
+app.use('/uploads', express.static(uploadDir, { index: false }));
+
+app.get('/uploads/:filename', (req, res) => {
+  const filePath = path.join(uploadDir, req.params.filename);
+  if (!fs.existsSync(filePath)) {
+    return res.status(404).json({ success: false, message: 'File not found' });
+  }
+  res.sendFile(filePath);
+});
 
 app.listen(PORT, () => {
   console.log(`Backend running on http://localhost:${PORT}`);

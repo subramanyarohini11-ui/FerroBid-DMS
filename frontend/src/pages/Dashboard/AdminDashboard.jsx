@@ -18,10 +18,6 @@ import {
   createCatalog,
   updateCatalog,
   deleteCatalog,
-  getLots,
-  createLot,
-  updateLot,
-  deleteLot,
   getDocuments as getAdminDocuments,
   createDocument,
   updateDocument,
@@ -59,12 +55,11 @@ function AdminDashboard() {
 
   const loadAdminData = async () => {
     try {
-      const [usersResponse, buyersResponse, sellersResponse, catalogsResponse, lotsResponse, documentsResponse, reportsResponse] = await Promise.all([
+      const [usersResponse, buyersResponse, sellersResponse, catalogsResponse, documentsResponse, reportsResponse] = await Promise.all([
         getUsers(),
         getBuyers(),
         getSellers(),
         getAdminCatalogs(),
-        getLots(),
         getAdminDocuments(),
         getReports(),
       ]);
@@ -73,7 +68,6 @@ function AdminDashboard() {
       setBuyers((buyersResponse.data || []).map((item) => ({ ...item, status: item.status || "Active" })));
       setSellers((sellersResponse.data || []).map((item) => ({ ...item, status: item.status || "Active" })));
       setCatalogs((catalogsResponse.data || []).map((item) => ({ ...item, status: item.status || "Upcoming" })));
-      setLots((lotsResponse.data || []).map((item) => ({ ...item, status: item.status || "Pending" })));
       setDocuments((documentsResponse.data || []).map((item) => ({ ...item, status: item.status || "Pending" })));
       setReports((reportsResponse.data || []).map((item) => ({ ...item, status: item.status || "Completed" })));
     } catch (error) {
@@ -220,53 +214,6 @@ function AdminDashboard() {
     } catch (error) {
       console.error(error);
       alert("Failed to delete catalog.");
-    }
-  };
-
-  const [lots, setLots] = useState([]);
-  const [editingLot, setEditingLot] = useState(null);
-  const [newLot, setNewLot] = useState({ name: "", catalog: "", status: "Pending" });
-
-  const handleAddLot = async (e) => {
-    e.preventDefault();
-    if (!newLot.name || !newLot.catalog) {
-      alert("Lot Name and Catalog are required");
-      return;
-    }
-    try {
-      const response = await createLot({ name: newLot.name, catalog: newLot.catalog, status: newLot.status });
-      setLots((prev) => [...prev, response.data.record]);
-      setNewLot({ name: "", catalog: "", status: "Pending" });
-      alert("Lot saved successfully.");
-    } catch (error) {
-      console.error(error);
-      alert("Failed to save lot.");
-    }
-  };
-
-  const handleEditLotClick = (lot) => setEditingLot({ ...lot });
-  const handleEditLotChange = (field, value) => setEditingLot((prev) => ({ ...prev, [field]: value }));
-  const handleSaveEditedLot = async () => {
-    try {
-      const response = await updateLot(editingLot.id, editingLot);
-      setLots((prev) => prev.map((l) => (l.id === editingLot.id ? response.data.record : l)));
-      setEditingLot(null);
-    } catch (error) {
-      console.error(error);
-      alert("Failed to update lot.");
-    }
-  };
-  const handleViewLot = (lot) => {
-    alert(`Lot details:\nName: ${lot.name}\nCatalog: ${lot.catalog}\nStatus: ${lot.status}`);
-  };
-  const handleDeleteLot = async (id) => {
-    if (!window.confirm("Delete this lot?")) return;
-    try {
-      await deleteLot(id);
-      setLots((prev) => prev.filter((l) => l.id !== id));
-    } catch (error) {
-      console.error(error);
-      alert("Failed to delete lot.");
     }
   };
 
@@ -698,83 +645,6 @@ function AdminDashboard() {
           </>
         );
 
-      case "Auction Lots":
-        return (
-          <>
-            <h1>Auction Lots</h1>
-            <p className="module-description">Manage lots assigned to each auction catalog.</p>
-
-            <div className="cards">
-              <div className="card">
-                <h3>Total Lots</h3>
-                <p>{lots.length}</p>
-              </div>
-              <div className="card">
-                <h3>Pending Review</h3>
-                <p>{lots.filter((l) => l.status === "Pending").length}</p>
-              </div>
-            </div>
-
-            <div className="module-box">
-              <div className="module-header">
-                <h2>Lot Records</h2>
-              </div>
-
-              <form className="user-form" onSubmit={handleAddLot}>
-                <h3>Add Lot</h3>
-                <input type="text" placeholder="Lot Name" value={newLot.name} onChange={(e) => setNewLot((prev) => ({ ...prev, name: e.target.value }))} />
-                <input type="text" placeholder="Catalog" value={newLot.catalog} onChange={(e) => setNewLot((prev) => ({ ...prev, catalog: e.target.value }))} />
-                <select value={newLot.status} onChange={(e) => setNewLot((prev) => ({ ...prev, status: e.target.value }))}>
-                  <option value="Active">Active</option>
-                  <option value="Pending">Pending</option>
-                  <option value="Sold">Sold</option>
-                </select>
-                <button type="submit" className="primary-btn">+ Add Lot</button>
-              </form>
-
-              {editingLot && (
-                <div className="edit-user-box">
-                  <h3>Edit Lot</h3>
-                  <input type="text" value={editingLot.name} onChange={(e) => handleEditLotChange("name", e.target.value)} />
-                  <input type="text" value={editingLot.catalog} onChange={(e) => handleEditLotChange("catalog", e.target.value)} />
-                  <select value={editingLot.status} onChange={(e) => handleEditLotChange("status", e.target.value)}>
-                    <option value="Active">Active</option>
-                    <option value="Pending">Pending</option>
-                    <option value="Sold">Sold</option>
-                  </select>
-                  <button className="primary-btn" onClick={handleSaveEditedLot}>Save</button>
-                  <button className="link-btn" onClick={() => setEditingLot(null)}>Cancel</button>
-                </div>
-              )}
-
-              <table className="data-table">
-                <thead>
-                  <tr>
-                    <th>Lot Name</th>
-                    <th>Catalog</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {lots.map((lot) => (
-                    <tr key={lot.id}>
-                      <td>{lot.name}</td>
-                      <td>{lot.catalog}</td>
-                      <td>{lot.status}</td>
-                      <td>
-                        <button className="link-btn" onClick={() => handleViewLot(lot)}>View</button>
-                        <button className="link-btn" onClick={() => handleEditLotClick(lot)}>Edit</button>
-                        <button className="link-btn" onClick={() => handleDeleteLot(lot.id)}>Delete</button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </>
-        );
-
       case "Document Management":
         return (
           <>
@@ -901,7 +771,6 @@ function AdminDashboard() {
           <li onClick={() => setActiveMenu("Buyer Management")}>Buyer Management</li>
           <li onClick={() => setActiveMenu("Seller Management")}>Seller Management</li>
           <li onClick={() => setActiveMenu("Auction Catalog")}>Auction Catalog</li>
-          <li onClick={() => setActiveMenu("Auction Lots")}>Auction Lots</li>
           <li onClick={() => setActiveMenu("Document Management")}>Document Management</li>
           <li onClick={() => setActiveMenu("Reports")}>Reports</li>
           <li onClick={handleLogout}>Logout</li>

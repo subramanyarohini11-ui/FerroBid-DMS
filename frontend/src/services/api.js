@@ -76,7 +76,12 @@ export const getBuyers = () => api.get('/buyers');
 
 export const createBuyer = (payload) => api.post('/buyers', payload);
 
-export const updateBuyer = (id, payload) => api.put(`/buyers/${id}`, payload);
+export const updateBuyer = (id, payload) => {
+  const formData = buildFormData(payload);
+  return api.put(`/buyers/${id}`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+};
 export const deleteBuyer = (id) => api.delete(`/buyers/${id}`);
 
 export const uploadSeller = (payload) => {
@@ -91,7 +96,12 @@ export const getSellers = () => api.get('/sellers');
 
 export const createSeller = (payload) => api.post('/sellers', payload);
 
-export const updateSeller = (id, payload) => api.put(`/sellers/${id}`, payload);
+export const updateSeller = (id, payload) => {
+  const formData = buildFormData(payload);
+  return api.put(`/sellers/${id}`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+};
 export const deleteSeller = (id) => api.delete(`/sellers/${id}`);
 
 export const uploadCatalog = (payload) => {
@@ -105,7 +115,12 @@ export const uploadCatalog = (payload) => {
 export const getCatalogs = () => api.get('/catalogs');
 
 export const createCatalog = (payload) => api.post('/catalogs', payload);
-export const updateCatalog = (id, payload) => api.put(`/catalogs/${id}`, payload);
+export const updateCatalog = (id, payload) => {
+  const formData = buildFormData(payload);
+  return api.put(`/catalogs/${id}`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+};
 export const deleteCatalog = (id) => api.delete(`/catalogs/${id}`);
 
 export const uploadDocument = (payload) => {
@@ -120,7 +135,12 @@ export const getDocuments = () => api.get('/documents');
 
 export const createDocument = (payload) => api.post('/documents', payload);
 
-export const updateDocument = (id, payload) => api.put(`/documents/${id}`, payload);
+export const updateDocument = (id, payload) => {
+  const formData = buildFormData(payload);
+  return api.put(`/documents/${id}`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+};
 export const deleteDocument = (id) => api.delete(`/documents/${id}`);
 
 export const getUsers = () => api.get('/users');

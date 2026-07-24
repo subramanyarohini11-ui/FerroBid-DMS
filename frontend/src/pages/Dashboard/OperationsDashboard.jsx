@@ -4,12 +4,20 @@ import "./Dashboard.css";
 import {
   uploadBuyer,
   getBuyers,
+  updateBuyer,
+  deleteBuyer,
   uploadSeller,
   getSellers,
+  updateSeller,
+  deleteSeller,
   uploadCatalog,
   getCatalogs,
+  updateCatalog,
+  deleteCatalog,
   uploadDocument,
   getDocuments,
+  updateDocument,
+  deleteDocument,
 } from "../../services/api";
 
 function OperationsDashboard() {
@@ -24,6 +32,37 @@ function OperationsDashboard() {
       navigate("/");
     }
   };
+
+  const normalizeFileUrl = (value) => {
+    if (!value) return "";
+    if (typeof value !== "string") return "";
+    if (value.startsWith("http://") || value.startsWith("https://")) return value;
+    if (value.startsWith("/")) return `http://localhost:5000${value}`;
+    return `http://localhost:5000/${value}`;
+  };
+
+  const getFileUrl = (record, keys = []) => {
+    for (const key of keys) {
+      const value = record?.[key];
+      if (value) return normalizeFileUrl(value);
+    }
+    return "";
+  };
+
+  const getFileLabel = (record, labelKeys = [], urlKeys = []) => {
+    for (const key of labelKeys) {
+      const value = record?.[key];
+      if (typeof value === "string" && value.trim()) return value;
+    }
+
+    const urlValue = getFileUrl(record, urlKeys);
+    if (urlValue) {
+      const segments = urlValue.split("/");
+      return segments[segments.length - 1] || "Uploaded file";
+    }
+
+    return "";
+  };
   const [buyerName, setBuyerName] = useState("");
 const [buyerCompany, setBuyerCompany] = useState("");
 const [buyerContact, setBuyerContact] = useState("");
@@ -34,62 +73,88 @@ const [aadhaarFile, setAadhaarFile] = useState(null);
 const [kycFile, setKycFile] = useState(null);
 const [chequeFile, setChequeFile] = useState(null);
 const [buyers, setBuyers] = useState([]);
+const [editingBuyerId, setEditingBuyerId] = useState(null);
+const [buyerResetKey, setBuyerResetKey] = useState(0);
+
+const resetBuyerForm = () => {
+  setBuyerName("");
+  setBuyerCompany("");
+  setBuyerContact("");
+  setGstFile(null);
+  setBankFile(null);
+  setPanFile(null);
+  setAadhaarFile(null);
+  setKycFile(null);
+  setChequeFile(null);
+  setEditingBuyerId(null);
+  setBuyerResetKey((prev) => prev + 1);
+};
 
 const handleSaveBuyer = async () => {
-  if (
-    !buyerName ||
-    !buyerCompany ||
-    !buyerContact ||
-    !gstFile ||
-    !bankFile ||
-    !panFile ||
-    !aadhaarFile ||
-    !kycFile ||
-    !chequeFile
-  ) {
-    alert("Please fill all fields and upload all documents.");
+  if (!buyerName || !buyerCompany || !buyerContact) {
+    alert("Please fill the buyer name, company, and contact details.");
     return;
   }
 
   try {
-    const response = await uploadBuyer({
-      name: buyerName,
-      company: buyerCompany,
-      contact: buyerContact,
-      gstFile,
-      bankFile,
-      panFile,
-      aadhaarFile,
-      kycFile,
-      chequeFile,
-    });
-
-    const newBuyer = {
-      ...response.data.record,
-      gstURL: response.data.record.gstURL ? `http://localhost:5000${response.data.record.gstURL}` : "",
-      bankURL: response.data.record.bankURL ? `http://localhost:5000${response.data.record.bankURL}` : "",
-      panURL: response.data.record.panURL ? `http://localhost:5000${response.data.record.panURL}` : "",
-      aadhaarURL: response.data.record.aadhaarURL ? `http://localhost:5000${response.data.record.aadhaarURL}` : "",
-      kycURL: response.data.record.kycURL ? `http://localhost:5000${response.data.record.kycURL}` : "",
-      chequeURL: response.data.record.chequeURL ? `http://localhost:5000${response.data.record.chequeURL}` : "",
-    };
+    if (editingBuyerId) {
+      await updateBuyer(editingBuyerId, {
+        name: buyerName,
+        company: buyerCompany,
+        contact: buyerContact,
+        gstFile: gstFile || null,
+        bankFile: bankFile || null,
+        panFile: panFile || null,
+        aadhaarFile: aadhaarFile || null,
+        kycFile: kycFile || null,
+        chequeFile: chequeFile || null,
+      });
+    } else {
+      await uploadBuyer({
+        name: buyerName,
+        company: buyerCompany,
+        contact: buyerContact,
+        gstFile,
+        bankFile,
+        panFile,
+        aadhaarFile,
+        kycFile,
+        chequeFile,
+      });
+    }
 
     await refreshOperationsData();
+    resetBuyerForm();
 
-    setBuyerName("");
-    setBuyerCompany("");
-    setBuyerContact("");
-    setGstFile(null);
-    setBankFile(null);
-    setPanFile(null);
-    setAadhaarFile(null);
-    setKycFile(null);
-    setChequeFile(null);
-
-    alert("Buyer saved successfully.");
+    alert(editingBuyerId ? "Buyer updated successfully." : "Buyer saved successfully.");
   } catch (error) {
     console.error(error);
     alert("Failed to save buyer.");
+  }
+};
+
+const handleEditBuyer = (buyer) => {
+  setEditingBuyerId(buyer.id);
+  setBuyerName(buyer.name || "");
+  setBuyerCompany(buyer.company || "");
+  setBuyerContact(buyer.contact || "");
+  setGstFile(null);
+  setBankFile(null);
+  setPanFile(null);
+  setAadhaarFile(null);
+  setKycFile(null);
+  setChequeFile(null);
+  setBuyerResetKey((prev) => prev + 1);
+};
+
+const handleDeleteBuyer = async (id) => {
+  if (!window.confirm("Delete this buyer record?")) return;
+  try {
+    await deleteBuyer(id);
+    await refreshOperationsData();
+  } catch (error) {
+    console.error(error);
+    alert("Failed to delete buyer.");
   }
 };
 
@@ -103,62 +168,88 @@ const [sellerAadhaarFile, setSellerAadhaarFile] = useState(null);
 const [sellerKycFile, setSellerKycFile] = useState(null);
 const [sellerChequeFile, setSellerChequeFile] = useState(null);
 const [sellers, setSellers] = useState([]);
+const [editingSellerId, setEditingSellerId] = useState(null);
+const [sellerResetKey, setSellerResetKey] = useState(0);
+
+const resetSellerForm = () => {
+  setSellerName("");
+  setSellerCompany("");
+  setSellerContact("");
+  setSellerGstFile(null);
+  setSellerBankFile(null);
+  setSellerPanFile(null);
+  setSellerAadhaarFile(null);
+  setSellerKycFile(null);
+  setSellerChequeFile(null);
+  setEditingSellerId(null);
+  setSellerResetKey((prev) => prev + 1);
+};
 
 const handleSaveSeller = async () => {
-  if (
-    !sellerName ||
-    !sellerCompany ||
-    !sellerContact ||
-    !sellerGstFile ||
-    !sellerBankFile ||
-    !sellerPanFile ||
-    !sellerAadhaarFile ||
-    !sellerKycFile ||
-    !sellerChequeFile
-  ) {
-    alert("Please fill all fields and upload all documents.");
+  if (!sellerName || !sellerCompany || !sellerContact) {
+    alert("Please fill the seller name, company, and contact details.");
     return;
   }
 
   try {
-    const response = await uploadSeller({
-      name: sellerName,
-      company: sellerCompany,
-      contact: sellerContact,
-      gstFile: sellerGstFile,
-      bankFile: sellerBankFile,
-      panFile: sellerPanFile,
-      aadhaarFile: sellerAadhaarFile,
-      kycFile: sellerKycFile,
-      chequeFile: sellerChequeFile,
-    });
-
-    const newSeller = {
-      ...response.data.record,
-      gstURL: response.data.record.gstURL ? `http://localhost:5000${response.data.record.gstURL}` : "",
-      bankURL: response.data.record.bankURL ? `http://localhost:5000${response.data.record.bankURL}` : "",
-      panURL: response.data.record.panURL ? `http://localhost:5000${response.data.record.panURL}` : "",
-      aadhaarURL: response.data.record.aadhaarURL ? `http://localhost:5000${response.data.record.aadhaarURL}` : "",
-      kycURL: response.data.record.kycURL ? `http://localhost:5000${response.data.record.kycURL}` : "",
-      chequeURL: response.data.record.chequeURL ? `http://localhost:5000${response.data.record.chequeURL}` : "",
-    };
+    if (editingSellerId) {
+      await updateSeller(editingSellerId, {
+        name: sellerName,
+        company: sellerCompany,
+        contact: sellerContact,
+        gstFile: sellerGstFile || null,
+        bankFile: sellerBankFile || null,
+        panFile: sellerPanFile || null,
+        aadhaarFile: sellerAadhaarFile || null,
+        kycFile: sellerKycFile || null,
+        chequeFile: sellerChequeFile || null,
+      });
+    } else {
+      await uploadSeller({
+        name: sellerName,
+        company: sellerCompany,
+        contact: sellerContact,
+        gstFile: sellerGstFile,
+        bankFile: sellerBankFile,
+        panFile: sellerPanFile,
+        aadhaarFile: sellerAadhaarFile,
+        kycFile: sellerKycFile,
+        chequeFile: sellerChequeFile,
+      });
+    }
 
     await refreshOperationsData();
+    resetSellerForm();
 
-    setSellerName("");
-    setSellerCompany("");
-    setSellerContact("");
-    setSellerGstFile(null);
-    setSellerBankFile(null);
-    setSellerPanFile(null);
-    setSellerAadhaarFile(null);
-    setSellerKycFile(null);
-    setSellerChequeFile(null);
-
-    alert("Seller saved successfully.");
+    alert(editingSellerId ? "Seller updated successfully." : "Seller saved successfully.");
   } catch (error) {
     console.error(error);
     alert("Failed to save seller.");
+  }
+};
+
+const handleEditSeller = (seller) => {
+  setEditingSellerId(seller.id);
+  setSellerName(seller.name || "");
+  setSellerCompany(seller.company || "");
+  setSellerContact(seller.contact || "");
+  setSellerGstFile(null);
+  setSellerBankFile(null);
+  setSellerPanFile(null);
+  setSellerAadhaarFile(null);
+  setSellerKycFile(null);
+  setSellerChequeFile(null);
+  setSellerResetKey((prev) => prev + 1);
+};
+
+const handleDeleteSeller = async (id) => {
+  if (!window.confirm("Delete this seller record?")) return;
+  try {
+    await deleteSeller(id);
+    await refreshOperationsData();
+  } catch (error) {
+    console.error(error);
+    alert("Failed to delete seller.");
   }
 };
 
@@ -166,7 +257,14 @@ const handleSaveSeller = async () => {
   const [catalogName, setCatalogName] = useState("");
   const [companyName, setCompanyName] = useState("");
   const [catalogFile, setCatalogFile] = useState(null);
+  const [lotNumber, setLotNumber] = useState("");
+  const [lotName, setLotName] = useState("");
+  const [lotDescription, setLotDescription] = useState("");
+  const [lotImageFile, setLotImageFile] = useState(null);
+  const [supportingDocumentFile, setSupportingDocumentFile] = useState(null);
   const [catalogs, setCatalogs] = useState([]);
+  const [editingCatalogId, setEditingCatalogId] = useState(null);
+  const [catalogResetKey, setCatalogResetKey] = useState(0);
 
   const refreshOperationsData = async () => {
     try {
@@ -179,29 +277,31 @@ const handleSaveSeller = async () => {
 
       setBuyers((buyersResponse.data || []).map((item) => ({
         ...item,
-        gstURL: item.gstURL ? `http://localhost:5000${item.gstURL}` : "",
-        bankURL: item.bankURL ? `http://localhost:5000${item.bankURL}` : "",
-        panURL: item.panURL ? `http://localhost:5000${item.panURL}` : "",
-        aadhaarURL: item.aadhaarURL ? `http://localhost:5000${item.aadhaarURL}` : "",
-        kycURL: item.kycURL ? `http://localhost:5000${item.kycURL}` : "",
-        chequeURL: item.chequeURL ? `http://localhost:5000${item.chequeURL}` : "",
+        gstURL: getFileUrl(item, ["gstURL", "gstFileURL"]),
+        bankURL: getFileUrl(item, ["bankURL", "bankFileURL"]),
+        panURL: getFileUrl(item, ["panURL", "panFileURL"]),
+        aadhaarURL: getFileUrl(item, ["aadhaarURL", "aadhaarFileURL"]),
+        kycURL: getFileUrl(item, ["kycURL", "kycFileURL"]),
+        chequeURL: getFileUrl(item, ["chequeURL", "chequeFileURL"]),
       })));
       setSellers((sellersResponse.data || []).map((item) => ({
         ...item,
-        gstURL: item.gstURL ? `http://localhost:5000${item.gstURL}` : "",
-        bankURL: item.bankURL ? `http://localhost:5000${item.bankURL}` : "",
-        panURL: item.panURL ? `http://localhost:5000${item.panURL}` : "",
-        aadhaarURL: item.aadhaarURL ? `http://localhost:5000${item.aadhaarURL}` : "",
-        kycURL: item.kycURL ? `http://localhost:5000${item.kycURL}` : "",
-        chequeURL: item.chequeURL ? `http://localhost:5000${item.chequeURL}` : "",
+        gstURL: getFileUrl(item, ["gstURL", "gstFileURL"]),
+        bankURL: getFileUrl(item, ["bankURL", "bankFileURL"]),
+        panURL: getFileUrl(item, ["panURL", "panFileURL"]),
+        aadhaarURL: getFileUrl(item, ["aadhaarURL", "aadhaarFileURL"]),
+        kycURL: getFileUrl(item, ["kycURL", "kycFileURL"]),
+        chequeURL: getFileUrl(item, ["chequeURL", "chequeFileURL"]),
       })));
       setCatalogs((catalogsResponse.data || []).map((item) => ({
         ...item,
-        fileURL: item.fileURL ? `http://localhost:5000${item.fileURL}` : "",
+        fileURL: getFileUrl(item, ["fileURL", "filePath"]),
+        lotImageURL: getFileUrl(item, ["lotImageURL"]),
+        supportingDocumentURL: getFileUrl(item, ["supportingDocumentURL"]),
       })));
       setDocuments((documentsResponse.data || []).map((item) => ({
         ...item,
-        fileURL: item.fileURL ? `http://localhost:5000${item.fileURL}` : "",
+        fileURL: getFileUrl(item, ["fileURL", "filePath"]),
       })));
     } catch (error) {
       console.error("Failed to load operations data", error);
@@ -213,34 +313,85 @@ const handleSaveSeller = async () => {
     refreshOperationsData().catch(() => {});
   }, []);
 
+  const resetCatalogForm = () => {
+    setCatalogName("");
+    setCompanyName("");
+    setCatalogFile(null);
+    setLotNumber("");
+    setLotName("");
+    setLotDescription("");
+    setLotImageFile(null);
+    setSupportingDocumentFile(null);
+    setEditingCatalogId(null);
+    setCatalogResetKey((prev) => prev + 1);
+  };
+
   const handleSaveCatalog = async () => {
-    if (!catalogName || !companyName || !catalogFile) {
+    if (!catalogName || !companyName) {
       alert("Please fill all fields.");
       return;
     }
 
     try {
-      const response = await uploadCatalog({
-        catalogName,
-        companyName,
-        file: catalogFile,
-      });
-
-      const newCatalog = {
-        ...response.data.record,
-        fileURL: response.data.record.fileURL ? `http://localhost:5000${response.data.record.fileURL}` : "",
-      };
+      if (editingCatalogId) {
+        await updateCatalog(editingCatalogId, {
+          catalogName,
+          companyName,
+          file: catalogFile || null,
+          lotNumber,
+          lotName,
+          lotDescription,
+          lotImage: lotImageFile || null,
+          supportingDocument: supportingDocumentFile || null,
+        });
+      } else {
+        if (!catalogFile) {
+          alert("Please choose a catalog file.");
+          return;
+        }
+        await uploadCatalog({
+          catalogName,
+          companyName,
+          file: catalogFile,
+          lotNumber,
+          lotName,
+          lotDescription,
+          lotImage: lotImageFile,
+          supportingDocument: supportingDocumentFile,
+        });
+      }
 
       await refreshOperationsData();
+      resetCatalogForm();
 
-      setCatalogName("");
-      setCompanyName("");
-      setCatalogFile(null);
-
-      alert("Catalog uploaded successfully.");
+      alert(editingCatalogId ? "Catalog updated successfully." : "Catalog uploaded successfully.");
     } catch (error) {
       console.error(error);
       alert("Failed to upload catalog.");
+    }
+  };
+
+  const handleEditCatalog = (catalog) => {
+    setEditingCatalogId(catalog.id);
+    setCatalogName(catalog.catalogName || catalog.name || "");
+    setCompanyName(catalog.companyName || "");
+    setCatalogFile(null);
+    setLotNumber(catalog.lotNumber || "");
+    setLotName(catalog.lotName || "");
+    setLotDescription(catalog.lotDescription || "");
+    setLotImageFile(null);
+    setSupportingDocumentFile(null);
+    setCatalogResetKey((prev) => prev + 1);
+  };
+
+  const handleDeleteCatalog = async (id) => {
+    if (!window.confirm("Delete this catalog?")) return;
+    try {
+      await deleteCatalog(id);
+      await refreshOperationsData();
+    } catch (error) {
+      console.error(error);
+      alert("Failed to delete catalog.");
     }
   };
 
@@ -248,56 +399,50 @@ const handleSaveSeller = async () => {
   const [auctionCompanyName, setAuctionCompanyName] = useState("");
   const [documentType, setDocumentType] = useState("");
   const [documentFile, setDocumentFile] = useState(null);
-  const [documents, setDocuments] = useState([
-    {
-      id: 1,
-      auctionName: "Industrial Scrap Auction",
-      companyName: "Tata Steel Ltd.",
-      documentType: "Auction Approval Letter",
-      fileName: "approval_letter.pdf",
-      fileURL: "#",
-    },
-    {
-      id: 2,
-      auctionName: "Machinery Auction",
-      companyName: "JSW Steel",
-      documentType: "Delivery Order",
-      fileName: "delivery_order.pdf",
-      fileURL: "#",
-    },
-  ]);
+  const [documents, setDocuments] = useState([]);
   const [editingDocumentId, setEditingDocumentId] = useState(null);
   const [documentResetKey, setDocumentResetKey] = useState(0);
 
+  const resetDocumentForm = () => {
+    setAuctionName("");
+    setAuctionCompanyName("");
+    setDocumentType("");
+    setDocumentFile(null);
+    setEditingDocumentId(null);
+    setDocumentResetKey((prev) => prev + 1);
+  };
+
   const handleSaveDocument = async () => {
-    if (!auctionName || !auctionCompanyName || !documentType || !documentFile) {
-      alert("Please fill all fields and upload a document.");
+    if (!auctionName || !auctionCompanyName || !documentType) {
+      alert("Please fill all fields.");
       return;
     }
 
     try {
-      const response = await uploadDocument({
-        auctionName,
-        companyName: auctionCompanyName,
-        documentType,
-        file: documentFile,
-      });
-
-      const newDocument = {
-        ...response.data.record,
-        fileURL: response.data.record.fileURL ? `http://localhost:5000${response.data.record.fileURL}` : "",
-      };
+      if (editingDocumentId) {
+        await updateDocument(editingDocumentId, {
+          auctionName,
+          companyName: auctionCompanyName,
+          documentType,
+          file: documentFile || null,
+        });
+      } else {
+        if (!documentFile) {
+          alert("Please select a document file.");
+          return;
+        }
+        await uploadDocument({
+          auctionName,
+          companyName: auctionCompanyName,
+          documentType,
+          file: documentFile,
+        });
+      }
 
       await refreshOperationsData();
+      resetDocumentForm();
 
-      setAuctionName("");
-      setAuctionCompanyName("");
-      setDocumentType("");
-      setDocumentFile(null);
-      setEditingDocumentId(null);
-      setDocumentResetKey((prev) => prev + 1);
-
-      alert("Document uploaded successfully.");
+      alert(editingDocumentId ? "Document updated successfully." : "Document uploaded successfully.");
     } catch (error) {
       console.error(error);
       alert("Failed to upload document.");
@@ -306,14 +451,22 @@ const handleSaveSeller = async () => {
 
   const handleEditDocument = (doc) => {
     setEditingDocumentId(doc.id);
-    setAuctionName(doc.auctionName);
-    setAuctionCompanyName(doc.companyName);
-    setDocumentType(doc.documentType);
+    setAuctionName(doc.auctionName || "");
+    setAuctionCompanyName(doc.companyName || "");
+    setDocumentType(doc.documentType || "");
     setDocumentFile(null);
+    setDocumentResetKey((prev) => prev + 1);
   };
 
-  const handleDeleteDocument = (id) => {
-    setDocuments((prev) => prev.filter((item) => item.id !== id));
+  const handleDeleteDocument = async (id) => {
+    if (!window.confirm("Delete this document?")) return;
+    try {
+      await deleteDocument(id);
+      await refreshOperationsData();
+    } catch (error) {
+      console.error(error);
+      alert("Failed to delete document.");
+    }
   };
 
   const renderContent = () => {
@@ -418,10 +571,15 @@ const handleSaveSeller = async () => {
 
         <div style={{ display: "flex", justifyContent: "center", gap: "12px", marginTop: "22px" }}>
           <button type="button" className="primary-btn" onClick={handleSaveBuyer} style={{ margin: 0 }}>
-            Save Buyer
+            {editingBuyerId ? "Save Changes" : "Save Buyer"}
           </button>
-          <button type="button" className="primary-btn" onClick={handleSaveBuyer} style={{ margin: 0 }}>
-            Add Buyer
+          <button
+            type="button"
+            className="primary-btn"
+            onClick={resetBuyerForm}
+            style={{ margin: 0 }}
+          >
+            Cancel
           </button>
         </div>
       </div>
@@ -461,62 +619,62 @@ const handleSaveSeller = async () => {
                   <td>{buyer.name}</td>
                   <td>{buyer.company}</td>
                   <td>
-                    {buyer.gstFile ? (
-                      <a href={buyer.gstURL} target="_blank" rel="noreferrer">
-                        {buyer.gstFile}
+                    {getFileLabel(buyer, ["gstFile"], ["gstURL", "gstFileURL"]) ? (
+                      <a href={getFileUrl(buyer, ["gstURL", "gstFileURL"])} target="_blank" rel="noreferrer">
+                        {getFileLabel(buyer, ["gstFile"], ["gstURL", "gstFileURL"])}
                       </a>
                     ) : (
                       "-"
                     )}
                   </td>
                   <td>
-                    {buyer.bankFile ? (
-                      <a href={buyer.bankURL} target="_blank" rel="noreferrer">
-                        {buyer.bankFile}
+                    {getFileLabel(buyer, ["bankFile"], ["bankURL", "bankFileURL"]) ? (
+                      <a href={getFileUrl(buyer, ["bankURL", "bankFileURL"])} target="_blank" rel="noreferrer">
+                        {getFileLabel(buyer, ["bankFile"], ["bankURL", "bankFileURL"])}
                       </a>
                     ) : (
                       "-"
                     )}
                   </td>
                   <td>
-                    {buyer.panFile ? (
-                      <a href={buyer.panURL} target="_blank" rel="noreferrer">
-                        {buyer.panFile}
+                    {getFileLabel(buyer, ["panFile"], ["panURL", "panFileURL"]) ? (
+                      <a href={getFileUrl(buyer, ["panURL", "panFileURL"])} target="_blank" rel="noreferrer">
+                        {getFileLabel(buyer, ["panFile"], ["panURL", "panFileURL"])}
                       </a>
                     ) : (
                       "-"
                     )}
                   </td>
                   <td>
-                    {buyer.aadhaarFile ? (
+                    {getFileLabel(buyer, ["aadhaarFile"], ["aadhaarURL", "aadhaarFileURL"]) ? (
                       <a
-                        href={buyer.aadhaarURL}
+                        href={getFileUrl(buyer, ["aadhaarURL", "aadhaarFileURL"])}
                         target="_blank"
                         rel="noreferrer"
                       >
-                        {buyer.aadhaarFile}
+                        {getFileLabel(buyer, ["aadhaarFile"], ["aadhaarURL", "aadhaarFileURL"])}
                       </a>
                     ) : (
                       "-"
                     )}
                   </td>
                   <td>
-                    {buyer.kycFile ? (
-                      <a href={buyer.kycURL} target="_blank" rel="noreferrer">
-                        {buyer.kycFile}
+                    {getFileLabel(buyer, ["kycFile"], ["kycURL", "kycFileURL"]) ? (
+                      <a href={getFileUrl(buyer, ["kycURL", "kycFileURL"])} target="_blank" rel="noreferrer">
+                        {getFileLabel(buyer, ["kycFile"], ["kycURL", "kycFileURL"])}
                       </a>
                     ) : (
                       "-"
                     )}
                   </td>
                   <td>
-                    {buyer.chequeFile ? (
+                    {getFileLabel(buyer, ["chequeFile"], ["chequeURL", "chequeFileURL"]) ? (
                       <a
-                        href={buyer.chequeURL}
+                        href={getFileUrl(buyer, ["chequeURL", "chequeFileURL"])}
                         target="_blank"
                         rel="noreferrer"
                       >
-                        {buyer.chequeFile}
+                        {getFileLabel(buyer, ["chequeFile"], ["chequeURL", "chequeFileURL"])}
                       </a>
                     ) : (
                       "-"
@@ -524,9 +682,22 @@ const handleSaveSeller = async () => {
                   </td>
                   <td>{buyer.contact}</td>
                   <td>
-                    <button className="link-btn">View</button>
-                    <button className="link-btn">Download</button>
-                    <button className="link-btn">Edit</button>
+                    <button
+                      className="link-btn"
+                      onClick={() => {
+                        const fileUrl = getFileUrl(buyer, ["gstURL", "gstFileURL", "bankURL", "bankFileURL", "panURL", "panFileURL", "aadhaarURL", "aadhaarFileURL", "kycURL", "kycFileURL", "chequeURL", "chequeFileURL"]);
+                        if (fileUrl) window.open(fileUrl, "_blank", "noopener,noreferrer");
+                        else alert("No file available to open.");
+                      }}
+                    >
+                      View
+                    </button>
+                    <button className="link-btn" onClick={() => handleEditBuyer(buyer)}>
+                      Edit
+                    </button>
+                    <button className="link-btn" onClick={() => handleDeleteBuyer(buyer.id)}>
+                      Delete
+                    </button>
                   </td>
                 </tr>
               ))
@@ -637,10 +808,15 @@ const handleSaveSeller = async () => {
 
         <div style={{ display: "flex", justifyContent: "center", gap: "12px", marginTop: "22px" }}>
           <button type="button" className="primary-btn" onClick={handleSaveSeller} style={{ margin: 0 }}>
-            Save Seller
+            {editingSellerId ? "Save Changes" : "Save Seller"}
           </button>
-          <button type="button" className="primary-btn" onClick={handleSaveSeller} style={{ margin: 0 }}>
-            Add Seller
+          <button
+            type="button"
+            className="primary-btn"
+            onClick={resetSellerForm}
+            style={{ margin: 0 }}
+          >
+            Cancel
           </button>
         </div>
       </div>
@@ -680,62 +856,62 @@ const handleSaveSeller = async () => {
                   <td>{seller.name}</td>
                   <td>{seller.company}</td>
                   <td>
-                    {seller.gstFile ? (
-                      <a href={seller.gstURL} target="_blank" rel="noreferrer">
-                        {seller.gstFile}
+                    {getFileLabel(seller, ["gstFile"], ["gstURL", "gstFileURL"]) ? (
+                      <a href={getFileUrl(seller, ["gstURL", "gstFileURL"])} target="_blank" rel="noreferrer">
+                        {getFileLabel(seller, ["gstFile"], ["gstURL", "gstFileURL"])}
                       </a>
                     ) : (
                       "-"
                     )}
                   </td>
                   <td>
-                    {seller.bankFile ? (
-                      <a href={seller.bankURL} target="_blank" rel="noreferrer">
-                        {seller.bankFile}
+                    {getFileLabel(seller, ["bankFile"], ["bankURL", "bankFileURL"]) ? (
+                      <a href={getFileUrl(seller, ["bankURL", "bankFileURL"])} target="_blank" rel="noreferrer">
+                        {getFileLabel(seller, ["bankFile"], ["bankURL", "bankFileURL"])}
                       </a>
                     ) : (
                       "-"
                     )}
                   </td>
                   <td>
-                    {seller.panFile ? (
-                      <a href={seller.panURL} target="_blank" rel="noreferrer">
-                        {seller.panFile}
+                    {getFileLabel(seller, ["panFile"], ["panURL", "panFileURL"]) ? (
+                      <a href={getFileUrl(seller, ["panURL", "panFileURL"])} target="_blank" rel="noreferrer">
+                        {getFileLabel(seller, ["panFile"], ["panURL", "panFileURL"])}
                       </a>
                     ) : (
                       "-"
                     )}
                   </td>
                   <td>
-                    {seller.aadhaarFile ? (
+                    {getFileLabel(seller, ["aadhaarFile"], ["aadhaarURL", "aadhaarFileURL"]) ? (
                       <a
-                        href={seller.aadhaarURL}
+                        href={getFileUrl(seller, ["aadhaarURL", "aadhaarFileURL"])}
                         target="_blank"
                         rel="noreferrer"
                       >
-                        {seller.aadhaarFile}
+                        {getFileLabel(seller, ["aadhaarFile"], ["aadhaarURL", "aadhaarFileURL"])}
                       </a>
                     ) : (
                       "-"
                     )}
                   </td>
                   <td>
-                    {seller.kycFile ? (
-                      <a href={seller.kycURL} target="_blank" rel="noreferrer">
-                        {seller.kycFile}
+                    {getFileLabel(seller, ["kycFile"], ["kycURL", "kycFileURL"]) ? (
+                      <a href={getFileUrl(seller, ["kycURL", "kycFileURL"])} target="_blank" rel="noreferrer">
+                        {getFileLabel(seller, ["kycFile"], ["kycURL", "kycFileURL"])}
                       </a>
                     ) : (
                       "-"
                     )}
                   </td>
                   <td>
-                    {seller.chequeFile ? (
+                    {getFileLabel(seller, ["chequeFile"], ["chequeURL", "chequeFileURL"]) ? (
                       <a
-                        href={seller.chequeURL}
+                        href={getFileUrl(seller, ["chequeURL", "chequeFileURL"])}
                         target="_blank"
                         rel="noreferrer"
                       >
-                        {seller.chequeFile}
+                        {getFileLabel(seller, ["chequeFile"], ["chequeURL", "chequeFileURL"])}
                       </a>
                     ) : (
                       "-"
@@ -743,9 +919,22 @@ const handleSaveSeller = async () => {
                   </td>
                   <td>{seller.contact}</td>
                   <td>
-                    <button className="link-btn">View</button>
-                    <button className="link-btn">Download</button>
-                    <button className="link-btn">Edit</button>
+                    <button
+                      className="link-btn"
+                      onClick={() => {
+                        const fileUrl = getFileUrl(seller, ["gstURL", "gstFileURL", "bankURL", "bankFileURL", "panURL", "panFileURL", "aadhaarURL", "aadhaarFileURL", "kycURL", "kycFileURL", "chequeURL", "chequeFileURL"]);
+                        if (fileUrl) window.open(fileUrl, "_blank", "noopener,noreferrer");
+                        else alert("No file available to open.");
+                      }}
+                    >
+                      View
+                    </button>
+                    <button className="link-btn" onClick={() => handleEditSeller(seller)}>
+                      Edit
+                    </button>
+                    <button className="link-btn" onClick={() => handleDeleteSeller(seller.id)}>
+                      Delete
+                    </button>
                   </td>
                 </tr>
               ))
@@ -764,10 +953,10 @@ const handleSaveSeller = async () => {
       </p>
 
       <div className="module-box">
-        <h2>Create New Catalog</h2>
+        <h2>Store Catalog</h2>
 
         <div className="form-row">
-          <label>Catalog Name</label>
+          <label>Catalog Number</label>
           <input
             type="text"
             placeholder="Enter Catalog Name"
@@ -797,12 +986,71 @@ const handleSaveSeller = async () => {
           />
         </div>
 
+        <h3>Lot Details</h3>
+
+        <div className="form-row">
+          <label>Lot Number</label>
+          <input
+            type="text"
+            placeholder="Enter Lot Number"
+            value={lotNumber}
+            onChange={(e) => setLotNumber(e.target.value)}
+            className="form-input"
+          />
+        </div>
+
+        <div className="form-row">
+          <label>Lot Name</label>
+          <input
+            type="text"
+            placeholder="Enter Lot Name"
+            value={lotName}
+            onChange={(e) => setLotName(e.target.value)}
+            className="form-input"
+          />
+        </div>
+
+        <div className="form-row">
+          <label>Lot Description</label>
+          <textarea
+            placeholder="Enter Lot Description"
+            value={lotDescription}
+            onChange={(e) => setLotDescription(e.target.value)}
+            className="form-input"
+          />
+        </div>
+
+        <div className="form-row">
+          <label>Upload Lot Image</label>
+          <input
+            key={`lot-image-${catalogResetKey}`}
+            type="file"
+            accept="image/*"
+            onChange={(e) => setLotImageFile(e.target.files[0])}
+          />
+        </div>
+
+        <div className="form-row">
+          <label>Upload Supporting Document</label>
+          <input
+            key={`supporting-document-${catalogResetKey}`}
+            type="file"
+            accept=".pdf,.doc,.docx,.xls,.xlsx"
+            onChange={(e) => setSupportingDocumentFile(e.target.files[0])}
+          />
+        </div>
+
         <div style={{ display: "flex", justifyContent: "center", gap: "12px", marginTop: "22px" }}>
           <button type="button" className="primary-btn" onClick={handleSaveCatalog} style={{ margin: 0 }}>
-            Save Catalog
+            {editingCatalogId ? "Save Changes" : "Save Catalog"}
           </button>
-          <button type="button" className="primary-btn" onClick={handleSaveCatalog} style={{ margin: 0 }}>
-            Add Catalog
+          <button
+            type="button"
+            className="primary-btn"
+            onClick={resetCatalogForm}
+            style={{ margin: 0 }}
+          >
+            Cancel
           </button>
         </div>
       </div>
@@ -815,50 +1063,66 @@ const handleSaveSeller = async () => {
         <table className="data-table">
           <thead>
             <tr>
-              <th>Catalog Name</th>
-              <th>Company</th>
-              <th>File</th>
+              <th>Sl No</th>
+              <th>Catalog Number</th>
+              <th>Company Name</th>
+              <th>Catalog PDF</th>
+              <th>Lot Number</th>
+              <th>Lot Name</th>
+              <th>Lot Description</th>
+              <th>Lot Image</th>
+              <th>Supporting Document</th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody>
             {catalogs.length === 0 ? (
               <tr>
-                <td colSpan="4" style={{ textAlign: "center" }}>
+                <td colSpan="10" style={{ textAlign: "center" }}>
                   No Catalog Uploaded
                 </td>
               </tr>
             ) : (
-              catalogs.map((catalog) => (
+              catalogs.map((catalog, index) => (
                 <tr key={catalog.id}>
+                  <td>{index + 1}</td>
                   <td>{catalog.catalogName}</td>
                   <td>{catalog.companyName}</td>
                   <td>{catalog.fileName}</td>
+                  <td>{catalog.lotNumber}</td>
+                  <td>{catalog.lotName}</td>
+                  <td>{catalog.lotDescription}</td>
                   <td>
-                    <a
-                      href={catalog.fileURL}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="link-btn"
-                    >
-                      View
-                    </a>
-
+                    {getFileLabel(catalog, ["lotImage"], ["lotImageURL"]) ? (
+                      <a href={getFileUrl(catalog, ["lotImageURL"])} target="_blank" rel="noreferrer">
+                        {getFileLabel(catalog, ["lotImage"], ["lotImageURL"])}
+                      </a>
+                    ) : ""}
+                  </td>
+                  <td>
+                    {getFileLabel(catalog, ["supportingDocument"], ["supportingDocumentURL"]) ? (
+                      <a href={getFileUrl(catalog, ["supportingDocumentURL"])} target="_blank" rel="noreferrer">
+                        {getFileLabel(catalog, ["supportingDocument"], ["supportingDocumentURL"])}
+                      </a>
+                    ) : ""}
+                  </td>
+                  <td>
                     <button
                       className="link-btn"
-                      onClick={() =>
-                        alert("Edit functionality will be added next.")
-                      }
+                      onClick={() => {
+                        const fileUrl = getFileUrl(catalog, ["fileURL", "filePath"]);
+                        if (fileUrl) window.open(fileUrl, "_blank", "noopener,noreferrer");
+                        else alert("No file available to open.");
+                      }}
                     >
+                      View
+                    </button>
+
+                    <button className="link-btn" onClick={() => handleEditCatalog(catalog)}>
                       Edit
                     </button>
 
-                    <button
-                      className="link-btn"
-                      onClick={() =>
-                        setCatalogs(catalogs.filter((item) => item.id !== catalog.id))
-                      }
-                    >
+                    <button className="link-btn" onClick={() => handleDeleteCatalog(catalog.id)}>
                       Delete
                     </button>
                   </td>
@@ -870,105 +1134,6 @@ const handleSaveSeller = async () => {
       </div>
     </>
   );
-      case "Auction Lots":
-        return (
-          <>
-            <h1>Auction Lots</h1>
-            <p className="module-description">
-              Create and manage auction lot details.
-            </p>
-
-            <div className="module-box">
-              <h2>Add New Lot</h2>
-
-              <div className="form-group">
-                <label>Lot Number</label>
-                <input
-                  type="text"
-                  placeholder="Enter Lot Number"
-                  className="form-input"
-                />
-              </div>
-
-              <div className="form-group">
-                <label>Lot Name</label>
-                <input
-                  type="text"
-                  placeholder="Enter Lot Name"
-                  className="form-input"
-                />
-              </div>
-
-              <div className="form-group">
-                <label>Lot Description</label>
-                <textarea
-                  rows="4"
-                  placeholder="Enter Lot Description"
-                  className="form-input"
-                ></textarea>
-              </div>
-
-              <div className="form-group">
-                <label>Upload Lot Images</label>
-                <input type="file" multiple accept="image/*" />
-              </div>
-
-              <div className="form-group">
-                <label>Upload Supporting Documents</label>
-                <input
-                  type="file"
-                  multiple
-                  accept=".pdf,.doc,.docx,.xls,.xlsx"
-                />
-              </div>
-
-              <div style={{ display: "flex", justifyContent: "center", gap: "12px", marginTop: "22px" }}>
-                <button type="button" className="primary-btn" style={{ margin: 0 }}>
-                  Save Lot
-                </button>
-                <button type="button" className="primary-btn" style={{ margin: 0 }}>
-                  Add Lot
-                </button>
-              </div>
-            </div>
-
-            <br />
-
-            <div className="module-box">
-              <h2>Lot Records</h2>
-
-              <table className="data-table">
-                <thead>
-                  <tr>
-                    <th>Sl No</th>
-                    <th>Lot Number</th>
-                    <th>Lot Name</th>
-                    <th>Description</th>
-                    <th>Images</th>
-                    <th>Documents</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>1</td>
-                    <td>LOT-001</td>
-                    <td>Industrial Scrap</td>
-                    <td>Steel Scrap Materials</td>
-                    <td>3 Images</td>
-                    <td>2 Files</td>
-                    <td>
-                      <button className="link-btn">View</button>
-                      <button className="link-btn">Download</button>
-                      <button className="link-btn">Edit</button>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </>
-        );
-
       case "Document Management":
   return (
     <>
@@ -1040,10 +1205,10 @@ const handleSaveSeller = async () => {
           <button
             type="button"
             className="primary-btn"
-            onClick={handleSaveDocument}
+            onClick={resetDocumentForm}
             style={{ margin: 0 }}
           >
-            Add Document
+            Cancel
           </button>
         </div>
       </div>
@@ -1088,9 +1253,16 @@ const handleSaveSeller = async () => {
                     )}
                   </td>
                   <td>
-                    <a href={doc.fileURL} target="_blank" rel="noreferrer" className="link-btn">
+                    <button
+                      className="link-btn"
+                      onClick={() => {
+                        const fileUrl = getFileUrl(doc, ["fileURL", "filePath"]);
+                        if (fileUrl && fileUrl !== "http://localhost:5000#") window.open(fileUrl, "_blank", "noopener,noreferrer");
+                        else alert("No file available to open.");
+                      }}
+                    >
                       View
-                    </a>
+                    </button>
                     <button className="link-btn" onClick={() => handleEditDocument(doc)}>
                       Edit
                     </button>
@@ -1110,9 +1282,9 @@ const handleSaveSeller = async () => {
       default:
         return (
           <>
-            <h1>Welcome Operation Executive</h1>
+            <h1>Subadmin Dashboard</h1>
             <p className="module-description">
-              Manage buyers, sellers, auction catalogs, auction lots, documents
+              Manage buyers, sellers, auction catalogs, documents
               and reports.
             </p>
 
@@ -1130,11 +1302,6 @@ const handleSaveSeller = async () => {
               <div className="card">
                 <h3>Total Auction Catalogs</h3>
                 <p>25</p>
-              </div>
-
-              <div className="card">
-                <h3>Total Auction Lots</h3>
-                <p>240</p>
               </div>
 
               <div className="card">
@@ -1168,7 +1335,6 @@ const handleSaveSeller = async () => {
           <li onClick={() => setActiveMenu("Auction Catalog")}>
             Auction Catalog
           </li>
-          <li onClick={() => setActiveMenu("Auction Lots")}>Auction Lots</li>
           <li onClick={() => setActiveMenu("Document Management")}>
             Document Management
           </li>
